@@ -8,22 +8,25 @@ export async function POST(req: NextRequest) {
 
     if (!userId || !productId) {
       return NextResponse.json(
-        { error: "userId and productId are required." },
+        { success: false, error: "userId and productId are required" },
         { status: 400 }
       );
     }
 
-    await removeItemFromCart(userId, productId);
+    const result = await removeItemFromCart(userId, productId);
 
     return NextResponse.json({
       success: true,
-      message: "Item removed from cart.",
+      cartItem: result,
     });
   } catch (error) {
-    console.error("POST /api/cart/remove error:", error);
+    console.error("Remove cart item error:", error);
 
     return NextResponse.json(
-      { error: "Failed to remove item from cart." },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to remove item",
+      },
       { status: 500 }
     );
   }

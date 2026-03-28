@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clearCart } from "../../../../lib/db/cart";
+import { clearCartByUserId } from "../../../../lib/db/cart";
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,22 +8,25 @@ export async function POST(req: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { error: "userId is required." },
+        { success: false, error: "userId is required" },
         { status: 400 }
       );
     }
 
-    await clearCart(userId);
+    await clearCartByUserId(userId);
 
     return NextResponse.json({
       success: true,
-      message: "Cart cleared successfully.",
+      message: "Cart cleared successfully",
     });
   } catch (error) {
-    console.error("POST /api/cart/clear error:", error);
+    console.error("Clear cart error:", error);
+
+    const message =
+      error instanceof Error ? error.message : "Failed to clear cart";
 
     return NextResponse.json(
-      { error: "Failed to clear cart." },
+      { success: false, error: message },
       { status: 500 }
     );
   }

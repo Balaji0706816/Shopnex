@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { error: "userId is required." },
+        { success: false, error: "userId is required" },
         { status: 400 }
       );
     }
@@ -19,10 +19,10 @@ export async function GET(req: NextRequest) {
       cart,
     });
   } catch (error) {
-    console.error("GET /api/cart error:", error);
+    console.error("GET cart error:", error);
 
     return NextResponse.json(
-      { error: "Failed to fetch cart." },
+      { success: false, error: "Failed to fetch cart" },
       { status: 500 }
     );
   }
