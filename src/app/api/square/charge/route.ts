@@ -25,7 +25,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { orderId, sourceId } = body;
+    const orderId = String(body.orderId || "").trim();
+    const sourceId = String(body.sourceId || "").trim();
+
+    console.log("Incoming orderId:", JSON.stringify(orderId));
+    console.log("Incoming sourceId:", JSON.stringify(sourceId));
 
     if (!orderId || !sourceId) {
       return NextResponse.json(
@@ -35,6 +39,8 @@ export async function POST(req: NextRequest) {
     }
 
     const order = await getOrderForPayment(orderId);
+
+    console.log("Fetched order:", order);
 
     if (!order) {
       return NextResponse.json(
