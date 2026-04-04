@@ -1,8 +1,12 @@
-import { prisma } from "../prisma";
+import { prisma } from "../../lib/prisma";
 
 export async function getOrderForPayment(orderId: string) {
-  return prisma.order.findUnique({
-    where: { id: orderId },
+  const cleanOrderId = orderId.trim();
+
+  console.log("Searching orderId in DB:", JSON.stringify(cleanOrderId));
+
+  const order = await prisma.order.findUnique({
+    where: { id: cleanOrderId },
     include: {
       items: {
         include: {
@@ -13,6 +17,10 @@ export async function getOrderForPayment(orderId: string) {
       user: true,
     },
   });
+
+  console.log("Order found in DB:", order);
+
+  return order;
 }
 
 export async function createPaymentRecord(data: {
@@ -33,7 +41,7 @@ export async function updateOrderPaymentStatus(
   orderStatus: "PENDING" | "PAID" | "FAILED" | "CANCELLED" | "FULFILLED"
 ) {
   return prisma.order.update({
-    where: { id: orderId },
+    where: { id: orderId.trim() },
     data: {
       paymentStatus,
       status: orderStatus,

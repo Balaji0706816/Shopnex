@@ -1,14 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { auth } from "../../../auth";
 import { getCartByUserId } from "../../../lib/db/cart";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const userId = req.nextUrl.searchParams.get("userId");
+    const session = await auth();
+
+    const userId = (session?.user as any)?.id;
 
     if (!userId) {
       return NextResponse.json(
-        { success: false, error: "userId is required" },
-        { status: 400 }
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
@@ -19,7 +22,7 @@ export async function GET(req: NextRequest) {
       cart,
     });
   } catch (error) {
-    console.error("GET cart error:", error);
+    console.error("GET /api/cart error:", error);
 
     return NextResponse.json(
       { success: false, error: "Failed to fetch cart" },

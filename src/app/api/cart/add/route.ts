@@ -1,15 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "../../../../auth";
 import { addItemToCart } from "../../../../lib/db/cart";
 import { prisma } from "../../../../lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { userId, productId, quantity } = body;
+    const session = await auth();
+    const userId = (session?.user as any)?.id;
 
-    if (!userId || !productId || quantity === undefined) {
+    if (!userId) {
       return NextResponse.json(
-        { success: false, error: "userId, productId, and quantity are required" },
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+    const { productId, quantity } = body;
+
+    if (!productId || quantity === undefined) {
+      return NextResponse.json(
+        { success: false, error: "productId and quantity are required" },
         { status: 400 }
       );
     }
@@ -41,7 +52,7 @@ export async function POST(req: NextRequest) {
       cartItem,
     });
   } catch (error) {
-    console.error("Add to cart error:", error);
+    console.error("POST /api/cart/add error:", error);
 
     return NextResponse.json(
       { success: false, error: "Failed to add item to cart" },

@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "../../../../auth";
 import { clearCartByUserId } from "../../../../lib/db/cart";
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
-    const body = await req.json();
-    const { userId } = body;
+    const session = await auth();
+    const userId = (session?.user as any)?.id;
 
     if (!userId) {
       return NextResponse.json(
-        { success: false, error: "userId is required" },
-        { status: 400 }
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
       );
     }
 

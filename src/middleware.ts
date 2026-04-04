@@ -1,7 +1,6 @@
-import { auth } from "./auth";
+import NextAuth from "next-auth";
+import authConfig from "./auth.config";
 
-export default auth;
+export const { auth: middleware } = NextAuth(authConfig);
 
-export const config = {
-  matcher: ["/cart", "/checkout", "/orders", "/admin/:path*"],
-};
+export default middleware;

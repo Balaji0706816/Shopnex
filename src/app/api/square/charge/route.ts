@@ -98,11 +98,17 @@ export async function POST(req: NextRequest) {
       await updateOrderPaymentStatus(order.id, "FAILED", "FAILED");
 
       const errorMessage =
-        squareData?.errors?.map((e: { detail?: string }) => e.detail).join(", ") ||
-        "Square payment failed";
+        squareData?.errors
+          ?.map((e: { detail?: string }) => e.detail)
+          .filter(Boolean)
+          .join(", ") || "Square payment failed";
 
       return NextResponse.json(
-        { success: false, error: errorMessage, details: squareData },
+        {
+          success: false,
+          error: errorMessage,
+          details: squareData,
+        },
         { status: 400 }
       );
     }
@@ -129,7 +135,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to process payment",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to process payment",
       },
       { status: 500 }
     );

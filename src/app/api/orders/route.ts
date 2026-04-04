@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "../../../auth";
 import {
   createOrderFromCart,
   getOrderById,
@@ -7,14 +8,23 @@ import {
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await auth();
+    const userId = (session?.user as any)?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const searchParams = req.nextUrl.searchParams;
-    const userId = searchParams.get("userId");
     const orderId = searchParams.get("orderId");
 
     if (orderId) {
       const order = await getOrderById(orderId);
 
-      if (!order) {
+      if (!order || order.userId !== userId) {
         return NextResponse.json(
           { success: false, error: "Order not found" },
           { status: 404 }
@@ -25,13 +35,6 @@ export async function GET(req: NextRequest) {
         success: true,
         order,
       });
-    }
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: "userId is required" },
-        { status: 400 }
-      );
     }
 
     const orders = await getOrdersByUserId(userId);
@@ -50,15 +53,15 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
-    const body = await req.json();
-    const { userId } = body;
+    const session = await auth();
+    const userId = (session?.user as any)?.id;
 
     if (!userId) {
       return NextResponse.json(
-        { success: false, error: "userId is required" },
-        { status: 400 }
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
@@ -78,7 +81,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to create order",
+        error:
+          error instanceof Error ? error.message : "Failed to create order",
       },
       { status: 500 }
     );

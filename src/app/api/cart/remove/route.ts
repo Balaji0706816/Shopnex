@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "../../../../auth";
 import { removeItemFromCart } from "../../../../lib/db/cart";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { userId, productId } = body;
+    const session = await auth();
+    const userId = (session?.user as any)?.id;
 
-    if (!userId || !productId) {
+    if (!userId) {
       return NextResponse.json(
-        { success: false, error: "userId and productId are required" },
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+    const { productId } = body;
+
+    if (!productId) {
+      return NextResponse.json(
+        { success: false, error: "productId is required" },
         { status: 400 }
       );
     }
@@ -20,12 +31,13 @@ export async function POST(req: NextRequest) {
       cartItem: result,
     });
   } catch (error) {
-    console.error("Remove cart item error:", error);
+    console.error("POST /api/cart/remove error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to remove item",
+        error:
+          error instanceof Error ? error.message : "Failed to remove item",
       },
       { status: 500 }
     );
