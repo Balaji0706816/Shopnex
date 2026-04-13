@@ -1,11 +1,19 @@
-import { prisma } from "../../lib/prisma";
 import { auth } from "../../auth";
+import { prisma } from "../../lib/prisma";
+import OrderCard from "../../components/orders/order-card";
 
 export default async function OrdersPage() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return <div>Please login</div>;
+    return (
+      <div className="mx-auto max-w-4xl px-6 py-20">
+        <h1 className="text-3xl font-bold text-slate-900">My Orders</h1>
+        <p className="mt-4 text-slate-600">
+          Please login to view your orders.
+        </p>
+      </div>
+    );
   }
 
   const orders = await prisma.order.findMany({
@@ -17,40 +25,22 @@ export default async function OrdersPage() {
         },
       },
     },
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: { createdAt: "desc" },
   });
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>My Orders</h1>
+    <section className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-5xl px-6 py-16">
+        <h1 className="text-4xl font-bold text-slate-900">
+          My Orders
+        </h1>
 
-      {orders.length === 0 && <p>No orders found</p>}
-
-      {orders.map((order) => (
-        <div
-          key={order.id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "15px",
-            marginBottom: "20px",
-          }}
-        >
-          <p><b>Order ID:</b> {order.id}</p>
-          <p><b>Status:</b> {order.status}</p>
-          <p><b>Payment:</b> {order.paymentStatus}</p>
-          <p><b>Total:</b> ₹{order.totalAmount}</p>
-
-          <h4>Items:</h4>
-
-          {order.items.map((item: any) => (
-            <div key={item.id}>
-              - {item.product.name} × {item.quantity}
-            </div>
+        <div className="mt-10 space-y-6">
+          {orders.map((order) => (
+            <OrderCard key={order.id} order={order} />
           ))}
         </div>
-      ))}
-    </div>
+      </div>
+    </section>
   );
 }

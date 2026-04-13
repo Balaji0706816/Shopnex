@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../../auth";
-import {
-  createOrderFromCart,
-  getOrderById,
-  getOrdersByUserId,
-} from "../../../lib/db/orders";
+import { prisma } from "../../../lib/prisma";
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     const userId = (session?.user as any)?.id;
@@ -18,72 +14,57 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const searchParams = req.nextUrl.searchParams;
-    const orderId = searchParams.get("orderId");
+    const cart = await prisma.cart.findFirst({
+      where: { userId },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
+    });
 
-    if (orderId) {
-      const order = await getOrderById(orderId);
-
-      if (!order || order.userId !== userId) {
-        return NextResponse.json(
-          { success: false, error: "Order not found" },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        order,
-      });
+    if (!cart || cart.items.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "Cart is empty" },
+        { status: 400 }
+      );
     }
 
-    const orders = await getOrdersByUserId(userId);
+    const totalAmount = cart.items.reduce(
+      (sum, item) => sum + item.quantity * item.product.price,
+      0
+    );
+
+    const order = await prisma.order.create({
+      data: {
+        userId,
+        totalAmount,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        items: {
+          create: cart.items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.product.price,
+          })),
+        },
+      },
+    });
+
+    // clear cart
+    await prisma.cartItem.deleteMany({
+      where: { cartId: cart.id },
+    });
 
     return NextResponse.json({
       success: true,
-      orders,
+      order,
     });
-  } catch (error) {
-    console.error("GET /api/orders error:", error);
-
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch orders" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(_req: NextRequest) {
-  try {
-    const session = await auth();
-    const userId = (session?.user as any)?.id;
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const order = await createOrderFromCart(userId);
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Order created successfully",
-        order,
-      },
-      { status: 201 }
-    );
   } catch (error) {
     console.error("POST /api/orders error:", error);
 
     return NextResponse.json(
-      {
-        success: false,
-        error:
-          error instanceof Error ? error.message : "Failed to create order",
-      },
+      { success: false, error: "Failed to create order" },
       { status: 500 }
     );
   }

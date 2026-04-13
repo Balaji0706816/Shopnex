@@ -15,21 +15,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const { productId, quantity } = body;
+    const contentType = req.headers.get("content-type") || "";
+
+    let productId: string | undefined;
+    let quantity: number | undefined;
+
+    if (contentType.includes("application/json")) {
+      const body = await req.json();
+      productId = body.productId;
+      quantity = Number(body.quantity);
+    } else if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      productId = String(formData.get("productId") || "");
+      quantity = Number(formData.get("quantity"));
+    }
 
     if (!productId || quantity === undefined) {
       return NextResponse.json(
-        { success: false, error: "productId and quantity are required" },
+        { success: false, error: "productId and quantity required" },
         { status: 400 }
       );
     }
 
-    const qty = Number(quantity);
-
-    if (Number.isNaN(qty) || qty <= 0) {
+    if (Number.isNaN(quantity) || quantity <= 0) {
       return NextResponse.json(
-        { success: false, error: "quantity must be a positive number" },
+        { success: false, error: "Invalid quantity" },
         { status: 400 }
       );
     }
@@ -45,7 +55,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const cartItem = await addItemToCart(userId, productId, qty);
+    const cartItem = await addItemToCart(userId, productId, quantity);
 
     return NextResponse.json({
       success: true,
@@ -55,7 +65,7 @@ export async function POST(req: NextRequest) {
     console.error("POST /api/cart/add error:", error);
 
     return NextResponse.json(
-      { success: false, error: "Failed to add item to cart" },
+      { success: false, error: "Failed to add item" },
       { status: 500 }
     );
   }
