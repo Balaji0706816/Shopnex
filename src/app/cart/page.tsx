@@ -1,66 +1,121 @@
-import { auth } from "../../auth";
-import { prisma } from "../../lib/prisma";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import CartItem from "../../components/cart/cart-item";
 import CartSummary from "../../components/cart/cart-summary";
 import EmptyCart from "../../components/cart/empty-cart";
 
-export default async function CartPage() {
-  const session = await auth();
+type CartProduct = {
+  id: string;
+  name: string;
+  price: number;
+  imageUrl?: string | null;
+  image?: string | null;
+};
 
-  if (!session?.user?.id) {
-    return (
-      <div className="mx-auto max-w-4xl px-6 py-20">
-        <h1 className="text-3xl font-bold text-slate-900">Cart</h1>
-        <p className="mt-4 text-slate-600">Please login to view your cart.</p>
-      </div>
+type CartItemType = {
+  id: string;
+  quantity: number;
+  product: CartProduct;
+};
+
+export default function CartPage() {
+  const [items, setItems] = useState<CartItemType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadCart() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await fetch("/api/cart", {
+          cache: "no-store",
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError("Failed to fetch cart");
+          return;
+        }
+
+        const resolvedItems =
+          data.items || data.cart?.items || data.cartItems || [];
+
+        setItems(resolvedItems);
+      } catch (error) {
+        setError("Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadCart();
+  }, []);
+
+  function handleQuantityChange(itemId: string, nextQuantity: number) {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId ? { ...item, quantity: nextQuantity } : item
+      )
     );
   }
 
-  const cart = await prisma.cart.findFirst({
-    where: { userId: session.user.id },
-    include: {
-      items: {
-        include: {
-          product: true,
-        },
-      },
-    },
-  });
+  function handleRemove(itemId: string) {
+    setItems((prev) => prev.filter((item) => item.id !== itemId));
+  }
 
-  const items = cart?.items ?? [];
-  const validItems = items.filter((item) => item.product);
+  const totalItems = useMemo(
+    () => items.reduce((sum, item) => sum + item.quantity, 0),
+    [items]
+  );
 
-  const totalItems = validItems.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = validItems.reduce(
-    (sum, item) => sum + item.quantity * (item.product?.price ?? 0),
-    0
+  const subtotal = useMemo(
+    () => items.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+    [items]
   );
 
   return (
-    <section className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl px-6 py-16">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-          My Cart
-        </h1>
-
-        {validItems.length === 0 ? (
-          <div className="mt-10">
-            <EmptyCart />
+    <div className="min-h-screen bg-slate-100 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        {loading ? (
+          <div className="border border-slate-200 bg-white p-8 text-slate-600 shadow-sm">
+            Loading cart...
           </div>
+        ) : error ? (
+          <div className="border border-red-200 bg-red-50 p-8 text-red-600 shadow-sm">
+            {error}
+          </div>
+        ) : items.length === 0 ? (
+          <EmptyCart />
         ) : (
-          <div className="mt-10 grid gap-8 lg:grid-cols-[1.5fr_0.7fr]">
+          <div className="grid gap-6 xl:grid-cols-[1.7fr_0.9fr]">
             <div className="space-y-4">
-              {validItems.map((item) => (
-                <CartItem key={item.id} item={item} />
+              <div className="border border-slate-200 bg-white px-5 py-4 shadow-sm">
+                <h1 className="text-2xl font-bold text-slate-900">My Cart</h1>
+                <p className="mt-1 text-sm text-slate-500">
+                  {totalItems} item(s) in your cart
+                </p>
+              </div>
+
+              {items.map((item) => (
+                <CartItem
+                  key={item.id}
+                  item={item}
+                  onQuantityChange={handleQuantityChange}
+                  onRemove={handleRemove}
+                />
               ))}
             </div>
 
-            <div>
+            <div className="xl:sticky xl:top-24 xl:self-start">
               <CartSummary totalItems={totalItems} subtotal={subtotal} />
             </div>
           </div>
         )}
       </div>
-    </section>
+    </div>
   );
 }

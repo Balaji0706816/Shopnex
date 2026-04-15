@@ -1,34 +1,59 @@
-type CartSummaryProps = {
-    totalItems: number;
-    subtotal: number;
-  };
-  
-  export default function CartSummary({
-    totalItems,
-    subtotal,
-  }: CartSummaryProps) {
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-bold text-slate-900">Order Summary</h2>
-  
-        <div className="mt-6 space-y-4 text-sm text-slate-600">
-          <div className="flex items-center justify-between">
-            <span>Total Items</span>
-            <span className="font-medium text-slate-900">{totalItems}</span>
-          </div>
-  
-          <div className="flex items-center justify-between">
-            <span>Subtotal</span>
-            <span className="font-medium text-slate-900">₹{subtotal}</span>
+import Link from "next/link";
+
+type Props = {
+  totalItems: number;
+  subtotal: number;
+};
+
+export default function CartSummary({ totalItems, subtotal }: Props) {
+  const discount = Math.floor(subtotal * 0.1);
+  const deliveryCharge = 0;
+  const total = subtotal - discount + deliveryCharge;
+
+  return (
+    <aside className="border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 px-5 py-4">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
+          Price details
+        </p>
+      </div>
+
+      <div className="space-y-4 px-5 py-4 text-sm">
+        <div className="flex items-center justify-between text-slate-700">
+          <span>Price ({totalItems} items)</span>
+          <span>₹{subtotal}</span>
+        </div>
+
+        <div className="flex items-center justify-between text-slate-700">
+          <span>Discount</span>
+          <span className="text-emerald-600">-₹{discount}</span>
+        </div>
+
+        <div className="flex items-center justify-between text-slate-700">
+          <span>Delivery Charges</span>
+          <span className="text-emerald-600">Free</span>
+        </div>
+
+        <div className="border-t border-dashed border-slate-300 pt-4">
+          <div className="flex items-center justify-between text-lg font-bold text-slate-900">
+            <span>Total Amount</span>
+            <span>₹{total}</span>
           </div>
         </div>
-  
-        <a
-          href="/checkout"
-          className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-        >
-          Proceed to Checkout
-        </a>
+
+        <div className="rounded-md bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          You will save ₹{discount} on this order
+        </div>
       </div>
-    );
-  }
+
+      <div className="border-t border-slate-200 px-5 py-4">
+        <Link
+          href="/checkout"
+          className="inline-flex w-full items-center justify-center bg-yellow-400 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-yellow-300"
+        >
+          Continue
+        </Link>
+      </div>
+    </aside>
+  );
+}
