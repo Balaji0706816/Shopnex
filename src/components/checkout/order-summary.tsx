@@ -43,15 +43,7 @@ export default function OrderSummary({ items }: Props) {
         return;
       }
 
-      const orderId =
-        data.order?.id || data.orderId || data.id || null;
-
-      if (orderId) {
-        router.push(`/orders/${orderId}`);
-      } else {
-        router.push("/orders");
-      }
-
+      router.push("/orders");
       router.refresh();
     } catch (error) {
       alert("Something went wrong while placing the order");
