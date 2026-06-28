@@ -2,7 +2,7 @@ import ProductCard from "./product-card";
 
 export default function ProductGrid({ products }: any) {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
       {products.map((product: any) => (
         <ProductCard key={product.id} product={product} />
       ))}

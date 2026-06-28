@@ -21,27 +21,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = credentials?.email as string | undefined;
         const password = credentials?.password as string | undefined;
 
-        if (!email || !password) {
-          throw new Error("Email and password are required.");
-        }
+        if (!email || !password) return null;
 
         const user = await prisma.user.findUnique({
-          where: { email },
+          where: { email: email.toLowerCase() },
         });
 
-        if (!user || !user.password) {
-          throw new Error("Invalid email or password.");
-        }
+        if (!user || !user.password) return null;
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
-        if (!isPasswordValid) {
-          throw new Error("Invalid email or password.");
-        }
-
-        if (!user.emailVerified) {
-          throw new Error("Please verify your email before logging in.");
-        }
+        if (!isPasswordValid) return null;
 
         return {
           id: user.id,

@@ -1,98 +1,115 @@
 import Link from "next/link";
+import { ArrowRight, Star } from "lucide-react";
 
 const featuredProducts = [
   {
     id: 1,
     name: "Wireless Headphones",
     price: 12999,
+    originalPrice: 18999,
     image: "/images/headphones.jpg",
-    category: "Audio",
+    rating: 4.5,
+    reviews: "12,430",
+    offer: "Min. 30% Off",
   },
   {
     id: 2,
     name: "Smart Watch",
     price: 15999,
+    originalPrice: 21999,
     image: "/images/watch.jpg",
-    category: "Wearables",
+    rating: 4.4,
+    reviews: "8,210",
+    offer: "Best Seller",
   },
   {
     id: 3,
     name: "Gaming Mouse",
     price: 4999,
+    originalPrice: 7999,
     image: "/images/mouse.jpg",
-    category: "Gaming",
+    rating: 4.6,
+    reviews: "4,982",
+    offer: "Deal of the Day",
   },
   {
     id: 4,
     name: "Mechanical Keyboard",
     price: 8999,
+    originalPrice: 12999,
     image: "/images/keyboard.jpg",
-    category: "Accessories",
+    rating: 4.3,
+    reviews: "2,340",
+    offer: "Bank Offer",
   },
 ];
 
-export default function FeaturedProducts() {
+export default function FeaturedProducts({
+  title = "Trending Products",
+}: {
+  title?: string;
+}) {
   return (
-    <section className="bg-white py-14">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Featured Products
-            </p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-              Explore top picks for modern shoppers
-            </h2>
-          </div>
+    <section className="rounded-2xl bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
 
-          <Link
-            href="/products"
-            className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-          >
-            View All
-          </Link>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredProducts.map((product) => (
-            <div
-              key={product.id}
-              className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
-            >
-              <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-              </div>
-
-              <div className="space-y-3 p-4">
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-500">
-                  {product.category}
-                </p>
-
-                <h3 className="line-clamp-2 text-lg font-semibold text-slate-900">
-                  {product.name}
-                </h3>
-
-                <p className="text-xl font-bold text-slate-900">
-                  ₹{product.price}
-                </p>
-
-                <div className="pt-1">
-                  <Link
-                    href="/products"
-                    className="inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
-                  >
-                    View Product
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <Link
+          href="/products"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white hover:bg-slate-700"
+        >
+          <ArrowRight className="h-5 w-5" />
+        </Link>
       </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {featuredProducts.map((product) => (
+          <Link
+            key={product.id}
+            href="/products"
+            className="group rounded-xl bg-white p-3 transition hover:shadow-md"
+          >
+            <div className="flex h-44 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-105"
+              />
+            </div>
+
+            <div className="mt-3">
+              <div className="inline-flex items-center gap-1 rounded bg-green-600 px-2 py-0.5 text-xs font-semibold text-white">
+                {product.rating}
+                <Star className="h-3 w-3 fill-white" />
+              </div>
+
+              <span className="ml-2 text-xs text-slate-500">
+                ({product.reviews})
+              </span>
+
+              <h3 className="mt-2 line-clamp-1 text-sm font-semibold text-slate-800">
+                {product.name}
+              </h3>
+
+              <div className="mt-1 flex items-center gap-2">
+                <span className="text-base font-bold text-slate-900">
+                  ₹{product.price}
+                </span>
+                <span className="text-xs text-slate-400 line-through">
+                  ₹{product.originalPrice}
+                </span>
+              </div>
+
+              <p className="mt-1 text-sm font-semibold text-green-600">
+                {product.offer}
+              </p>
+
+              <p className="mt-1 text-xs font-medium text-blue-600">
+                ₹500 with Bank offer + more
+              </p>
+            </div>
+          </Link>
+        ))}
+      </div>       c
     </section>
   );
 }

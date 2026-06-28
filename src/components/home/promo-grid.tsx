@@ -1,0 +1,132 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+const promoBanners = [
+  {
+    title: "Beauty & Hair Care",
+    subtitle: "Shop oils, shampoo, conditioner and hair essentials",
+    image: "/images/banners/banner-1.jpg",
+  },
+  {
+    title: "Fashion Finds",
+    subtitle: "Wigs, bags, shoes and new arrivals",
+    image: "/images/banners/banner-2.jpg",
+  },
+  {
+    title: "Food & Grocery",
+    subtitle: "Everyday essentials and trusted products",
+    image: "/images/banners/banner-3.jpg",
+  },
+  {
+    title: "Shoes & Bags",
+    subtitle: "Fresh styles for women and men",
+    image: "/images/banners/banner-4.jpg",
+  },
+  {
+    title: "New Arrivals",
+    subtitle: "Latest products added this week",
+    image: "/images/banners/banner-5.jpg",
+  },
+];
+
+export default function PromoGrid() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const activeIndexRef = useRef(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  function updateIndex(index: number) {
+    activeIndexRef.current = index;
+    setActiveIndex(index);
+  }
+
+  function scrollToCard(index: number) {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const card = container.children[index] as HTMLElement;
+    if (!card) return;
+
+    container.scrollTo({
+      left: card.offsetLeft,
+      behavior: "smooth",
+    });
+
+    updateIndex(index);
+  }
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "ArrowRight") {
+        const next =
+          activeIndexRef.current === promoBanners.length - 1
+            ? 0
+            : activeIndexRef.current + 1;
+
+        scrollToCard(next);
+      }
+
+      if (e.key === "ArrowLeft") {
+        const prev =
+          activeIndexRef.current === 0
+            ? promoBanners.length - 1
+            : activeIndexRef.current - 1;
+
+        scrollToCard(prev);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  return (
+    <section className="mt-4 overflow-hidden">
+      <div
+        ref={scrollRef}
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {promoBanners.map((banner) => (
+          <a
+            key={banner.title}
+            href="/products"
+            className="group relative h-[220px] w-[calc((100%-32px)/3)] min-w-[calc((100%-32px)/3)] snap-start overflow-hidden rounded-2xl bg-slate-200 shadow-sm"
+          >
+            <img
+              src={banner.image}
+              alt={banner.title}
+              className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/25 to-transparent" />
+
+            <div className="absolute left-6 top-6 max-w-[280px] text-white">
+              <h2 className="line-clamp-2 text-2xl font-bold leading-tight">
+                {banner.title}
+              </h2>
+
+              <p className="mt-2 line-clamp-2 text-sm leading-5 text-white/90">
+                {banner.subtitle}
+              </p>
+
+              <p className="mt-4 text-sm font-bold">Shop now</p>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <div className="mt-2 flex justify-center gap-2">
+        {promoBanners.map((_, index) => (
+          <button
+            key={index}
+            type="button"
+            onClick={() => scrollToCard(index)}
+            className={`h-2 rounded-full transition-all ${
+              activeIndex === index ? "w-8 bg-slate-700" : "w-2 bg-slate-300"
+            }`}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
