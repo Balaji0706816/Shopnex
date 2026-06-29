@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const promoBanners = [
@@ -7,26 +8,31 @@ const promoBanners = [
     title: "Beauty & Hair Care",
     subtitle: "Shop oils, shampoo, conditioner and hair essentials",
     image: "/images/banners/banner-1.jpg",
+    href: "/beauty-and-hair-care",
   },
   {
     title: "Fashion Finds",
     subtitle: "Wigs, bags, shoes and new arrivals",
     image: "/images/banners/banner-2.jpg",
+    href: "/fashion-finds",
   },
   {
     title: "Food & Grocery",
     subtitle: "Everyday essentials and trusted products",
     image: "/images/banners/banner-3.jpg",
+    href: "/food-and-grocery",
   },
   {
     title: "Shoes & Bags",
     subtitle: "Fresh styles for women and men",
     image: "/images/banners/banner-4.jpg",
+    href: "/products",
   },
   {
-    title: "New Arrivals",
-    subtitle: "Latest products added this week",
+    title: "Home Essentials",
+    subtitle: "Kitchen, bath, storage and everyday home basics",
     image: "/images/banners/banner-5.jpg",
+    href: "/home-essentials",
   },
 ];
 
@@ -87,9 +93,9 @@ export default function PromoGrid() {
         className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {promoBanners.map((banner) => (
-          <a
+          <Link
             key={banner.title}
-            href="/products"
+            href={banner.href}
             className="group relative h-[220px] w-[calc((100%-32px)/3)] min-w-[calc((100%-32px)/3)] snap-start overflow-hidden rounded-2xl bg-slate-200 shadow-sm"
           >
             <img
@@ -111,7 +117,7 @@ export default function PromoGrid() {
 
               <p className="mt-4 text-sm font-bold">Shop now</p>
             </div>
-          </a>
+          </Link>
         ))}
       </div>
 
